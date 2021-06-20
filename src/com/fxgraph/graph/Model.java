@@ -7,6 +7,10 @@ import java.util.Map;
 
 import com.fxgraph.cells.TriangleCell;
 import com.fxgraph.cells.RectangleCell;
+import com.fxgraph.cells.CircleCell;
+import com.fxgraph.cells.ImageCell;
+import com.fxgraph.cells.ButtonCell;
+import com.fxgraph.cells.LabelCell;
 
 public class Model {
     Cell graphParent;
@@ -75,23 +79,39 @@ public class Model {
                 addCell(rectangleCell);
                 break;
             case TRIANGLE:
-                TriangleCell circleCell = new TriangleCell(id);
+                TriangleCell triangleCell = new TriangleCell(id);
+                addCell(triangleCell);
+                break;
+            case CIRCLE:
+                CircleCell circleCell = new CircleCell(id);
                 addCell(circleCell);
+                break;
+            case LABEL:
+                LabelCell labelCell = new LabelCell(id);
+                addCell(labelCell);
+                break;
+            case IMAGE:
+                ImageCell imageCell = new ImageCell(id);
+                addCell(imageCell);
+                break;
+            case BUTTON:
+                ButtonCell buttonCell = new ButtonCell(id);
+                addCell(buttonCell);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported type: " + type);
         }
     }
 
-    private void addCell( Cell cell) {
+    private void addCell(Cell cell) {
         addedCells.add(cell);
-        cellMap.put( cell.getCellId(), cell);
+        cellMap.put(cell.getCellId(), cell);
     }
 
-    public void addEdge( String sourceId, String targetId) {
-        Cell sourceCell = cellMap.get( sourceId);
-        Cell targetCell = cellMap.get( targetId);
-        Edge edge = new Edge( sourceCell, targetCell);
+    public void addEdge(String sourceId, String targetId) {
+        Cell sourceCell = cellMap.get(sourceId);
+        Cell targetCell = cellMap.get(targetId);
+        Edge edge = new Edge(sourceCell, targetCell);
         addedEdges.add( edge);
     }
 

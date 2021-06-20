@@ -5,7 +5,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 
 public class Graph {
-
     private Model model;
     private Group canvas;
     private ZoomableScrollPane scrollPane;
@@ -20,16 +19,11 @@ public class Graph {
 
     public Graph() {
         this.model = new Model();
-
         canvas = new Group();
         cellLayer = new CellLayer();
-
         canvas.getChildren().add(cellLayer);
-
         mouseGestures = new MouseGestures(this);
-
         scrollPane = new ZoomableScrollPane(canvas);
-
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
     }
@@ -46,8 +40,7 @@ public class Graph {
         return model;
     }
 
-    public void beginUpdate() {
-    }
+    public void beginUpdate() { }
 
     public void endUpdate() {
         // add components to graph pane
@@ -72,7 +65,6 @@ public class Graph {
 
         // merge added & removed cells with all cells
         getModel().merge();
-
     }
 
     public double getScale() {
