@@ -120,7 +120,7 @@ public class Model {
      * @param cellList
      */
     public void attachOrphansToGraphParent( List<Cell> cellList) {
-        for( Cell cell: cellList) {
+        for(Cell cell: cellList) {
             if( cell.getCellParents().size() == 0) {
                 graphParent.addCellChild( cell);
             }
@@ -132,7 +132,7 @@ public class Model {
      * @param cellList
      */
     public void disconnectFromGraphParent( List<Cell> cellList) {
-        for( Cell cell: cellList) {
+        for(Cell cell: cellList) {
             graphParent.removeCellChild( cell);
         }
     }

@@ -3,6 +3,9 @@ package pipeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import javafx.beans.binding.Bindings;
@@ -25,37 +28,59 @@ import javafx.scene.text.Text;
 import com.fxgraph.graph.CellType;
 import com.fxgraph.graph.Graph;
 import com.fxgraph.graph.Model;
-import com.fxgraph.layout.base.Layout;
-import com.fxgraph.layout.random.RandomLayout;
 
 public class Main extends Application {
     Graph graph = new Graph();
-    Button button;
-    Button button2;
+    Button cnode, mnode, dnode;
 
     @Override
     public void start(Stage primaryStage) {
         BorderPane root = new BorderPane();
         graph = new Graph();
-
         root.setCenter(graph.getScrollPane());
 
         // create button, set text, set action
-        button = new Button();
-        button.setText("yes");
-        button.setOnAction(new EventHandler<ActionEvent>() {
+        cnode = new Button("Collection Node");
+        cnode.setText("C");
+        double r = 25;
+        cnode.setShape(new Circle(r));
+        cnode.setMinSize(2*r, 2*r);
+        cnode.setMaxSize(2*r, 2*r);
+        cnode.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (event.getSource() == button) {
-                    System.out.println("You clicked button.");
+                if (event.getSource() == cnode) {
+                    System.out.println("Collection Node");
                 }
             }
         });
 
-        // use lambda inner function to set action for button2
-        button2 = new Button();
-        button2.setText("cancel");
-        button2.setOnAction(e -> System.out.println("drink bubble tea"));
+        mnode = new Button("Model Node");
+        mnode.setText("M");
+        mnode.setShape(new Rectangle(100,100));
+        mnode.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (event.getSource() == mnode) {
+                    System.out.println("Model Node");
+                }
+            }
+        });
+
+        dnode = new Button("Data I/O Node");
+        dnode.setText("D");
+        double width = 50;
+        double height = 50;
+        dnode.setShape(new Polygon( width / 2, 0, width, height, 0, height));
+        dnode.setText("cancel");
+        dnode.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (event.getSource() == dnode) {
+                    System.out.println("Data I/O Node");
+                }
+            }
+        });
 
         // create labels
         Label label1 = new Label(" Workspace ");
@@ -63,97 +88,90 @@ public class Main extends Application {
         Label label3 = new Label(" Function 2");
 
         // manually set buttons instead of using VBox
-        button.setLayoutX(100);
-        button.setLayoutY(10);
-        button2.setLayoutX(200);
-        button2.setLayoutY(10);
-//            label1.setLayoutX(700);
-//            label1.setLayoutY(40);
-//            label2.setLayoutX(200);
-//            label2.setLayoutY(40);
+        cnode.setLayoutX(100);
+        cnode.setLayoutY(10);
+        mnode.setLayoutX(200);
+        mnode.setLayoutY(10);
+        dnode.setLayoutX(300);
+        dnode.setLayoutY(10);
+        label1.setLayoutX(700);
+        label1.setLayoutY(40);
+        label2.setLayoutX(200);
+        label2.setLayoutY(40);
+        label3.setLayoutX(50);
+        label3.setLayoutY(700);
+
+        root.getChildren().addAll(label1, label2, label3);
 
         // drag and drop items
-        final Text source = new Text(50, 100, "Function 1");
-        source.setScaleX(2.0);
-        source.setScaleY(2.0);
+        final Text function1 = new Text(50, 100, "Function 1");
+        function1.setScaleX(2.0);
+        function1.setScaleY(2.0);
 
-        final Text source2 = new Text(50, 100, "Function 2");
-        source2.setScaleX(2.0);
-        source2.setScaleY(2.0);
+        final Text function2 = new Text(50, 100, "Function 2");
+        function2.setScaleX(2.0);
+        function2.setScaleY(2.0);
 
+        //change target to cnode, mnode, dnode
         final Text target = new Text(250, 100, " ADD");
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
-        // root: left VBox with buttons
-        VBox root1 = new VBox();
-        root1.getChildren().add(button);
-        root1.getChildren().add(button2);
-        button.setStyle("-fx-font-size: 1.5em; ");
-        button2.setStyle("-fx-font-size: 1.5em; ");
-        // set borderline; size; alignment; spacing for VBox
-        root1.setStyle("-fx-border-color: black");
-        root1.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
-        root1.setAlignment(Pos.CENTER);
-        root1.setSpacing(30);
+        // left VBox with nodes
+        root.getChildren().add(cnode);
+        root.getChildren().add(mnode);
+        cnode.setStyle("-fx-font-size: 1.5em; ");
+        mnode.setStyle("-fx-font-size: 1.5em; ");
+        root.setStyle("-fx-border-color: black");
+        root.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
 //            DoubleProperty fontSize= new SimpleDoubleProperty(5); // font size in pt
 //            root.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize));
 
-        // root2: right VBox with drag and drop
-        VBox root2 = new VBox();
-        root2.getChildren().add(source);
-        root2.getChildren().add(source2);
-//            root2.getChildren().add(target);
-        root2.setStyle("-fx-border-color: black");
-        root2.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
-        root2.setAlignment(Pos.CENTER);
-        root2.setSpacing(30);
+        // right VBox with drag and drop
+        root.getChildren().add(function1);
+        root.getChildren().add(function2);
+//            root.getChildren().add(target);
 
-        // root3: mid VBox with labels
-        VBox root3 = new VBox();
+        // mid VBox with labels
 //            root3.getChildren().add(label1);
-        root3.getChildren().add(target);
-        root3.setSpacing(30);
-        root3.setStyle("-fx-border-color: black");
-        root3.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.5));
+        root.getChildren().add(target);
 //            Line line1= new Line(600, 0, 600, 600);
 //            root3.getChildren().add(line1);
-        root3.setAlignment(Pos.CENTER);
         // set font size for label in VBox
         DoubleProperty fontSize3= new SimpleDoubleProperty(18); // font size in pt
-        root3.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize3));
+        root.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize3));
 
         // drag and drop functions
-        source.setOnDragDetected(new EventHandler<MouseEvent>() {
+        function1.setOnDragDetected(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 /* drag was detected, start drag-and-drop gesture*/
                 System.out.println("onDragDetected");
 
                 /* allow any transfer mode */
-                Dragboard db= source.startDragAndDrop(TransferMode.ANY);
+                Dragboard db= function1.startDragAndDrop(TransferMode.ANY);
 
                 /* put a string on dragboard */
                 ClipboardContent content= new ClipboardContent();
-                content.putString(source.getText());
+                content.putString(function1.getText());
                 db.setContent(content);
 
                 event.consume();
             }
         });
 
-        source2.setOnDragDetected(new EventHandler<MouseEvent>() {
+        function2.setOnDragDetected(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 /* drag was detected, start drag-and-drop gesture*/
                 System.out.println("onDragDetected");
 
                 /* allow any transfer mode */
-                Dragboard db= source.startDragAndDrop(TransferMode.ANY);
+                Dragboard db= function1.startDragAndDrop(TransferMode.ANY);
 
                 /* put a string on dragboard */
                 ClipboardContent content= new ClipboardContent();
-                content.putString(source2.getText());
+                content.putString(function2.getText());
                 db.setContent(content);
 
                 event.consume();
@@ -214,13 +232,12 @@ public class Main extends Application {
 //                    root3.getChildren().add(label2);
                 boolean success= false;
                 if (db.getString().equals("Function 1")) {
-                    root3.getChildren().add(new Label(" Function 1"));
+                    root.getChildren().add(new Label(" Function 1"));
                 }
                 if (db.getString().equals("Function 2")) {
-                    root3.getChildren().add(new Label(" Function 2"));
+                    root.getChildren().add(new Label(" Function 2"));
                 }
                 if (db.hasString()) {
-
 //                        target.setText(db.getString());
                     success= true;
                 }
@@ -228,51 +245,37 @@ public class Main extends Application {
                 /* let the source know whether the string was successfully
                  * transferred and used */
                 event.setDropCompleted(success);
-
                 event.consume();
             }
         });
 
-        source.setOnDragDone(new EventHandler<DragEvent>() {
+        function1.setOnDragDone(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
                 /* the drag-and-drop gesture ended */
                 System.out.println("onDragDone");
                 /* if the data was successfully moved, clear it */
                 if (event.getTransferMode() == TransferMode.MOVE) {
-                    source.setText("");
+                    function1.setText("");
                 }
-
                 event.consume();
             }
         });
 
-        source2.setOnDragDone(new EventHandler<DragEvent>() {
+        function2.setOnDragDone(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
                 /* the drag-and-drop gesture ended */
                 System.out.println("onDragDone");
                 /* if the data was successfully moved, clear it */
                 if (event.getTransferMode() == TransferMode.MOVE) {
-                    source2.setText("");
-                }
-
-                event.consume();
+                    function2.setText("");
+                } event.consume();
             }
         });
 
-        //            root2.getChildren().addAll(label1, label2, label3);
-
-        // HBox
-        // / | \
-        // root root3 root2
         HBox hbox = new HBox();
-        hbox.getChildren().addAll(root, root1, root3, root2);
-//            final Separator sepVert1= new Separator();
-//            sepVert1.setOrientation(Orientation.VERTICAL);
-//            hbox.getChildren().add(sepVert1);
-
-
+        hbox.getChildren().addAll(root);
 
         Scene scene = new Scene(hbox, 900, 600);
         scene.getStylesheets().add(getClass().getResource("pipeline.css").toExternalForm());
@@ -280,10 +283,9 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        //addGraphComponents();
-
-        Layout layout = new RandomLayout(graph);
-        layout.execute();
+        addGraphComponents();
+//        Layout layout = new RandomLayout(graph);
+//        layout.execute();
     }
 
     private void addGraphComponents() {
@@ -292,19 +294,19 @@ public class Main extends Application {
         graph.beginUpdate();
 
         model.addCell("Cell A", CellType.RECTANGLE);
-        model.addCell("Cell B", CellType.TRIANGLE);
-        model.addCell("Cell C", CellType.RECTANGLE);
-        model.addCell("Cell D", CellType.CIRCLE);
+        model.addCell("Cell B", CellType.RECTANGLE);
+        model.addCell("Cell C", CellType.TRIANGLE);
+        model.addCell("Cell D", CellType.TRIANGLE);
         model.addCell("Cell E", CellType.CIRCLE);
-        model.addCell("Cell F", CellType.IMAGE);
-        model.addCell("Cell G", CellType.BUTTON);
+        model.addCell("Cell F", CellType.CIRCLE);
+        model.addCell("Cell G", CellType.CIRCLE);
 
-        model.addEdge("Cell A", "Cell B");
-        model.addEdge("Cell B", "Cell C");
-        model.addEdge("Cell C", "Cell D");
-        model.addEdge("Cell D", "Cell E");
-        model.addEdge("Cell E", "Cell F");
-        model.addEdge("Cell F", "Cell G");
+//        model.addEdge("Cell A", "Cell B");
+//        model.addEdge("Cell B", "Cell C");
+//        model.addEdge("Cell C", "Cell D");
+//        model.addEdge("Cell D", "Cell E");
+//        model.addEdge("Cell E", "Cell F");
+//        model.addEdge("Cell F", "Cell G");
 
         graph.endUpdate();
     }
