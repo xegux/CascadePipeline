@@ -1,7 +1,9 @@
 package pipeline;
 
 import javafx.application.Application;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
@@ -36,10 +38,21 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         BorderPane root = new BorderPane();
+        ToolBar toolbar = new ToolBar();
+        VBox left = new VBox();
+        VBox center = new VBox();
+        VBox right = new VBox();
+        HBox bottom = new HBox();
+        root.setTop(toolbar);
+        root.setLeft(left);
+        root.setCenter(center);
+        root.setRight(right);
+        root.setBottom(bottom);
+
         graph = new Graph();
         root.setCenter(graph.getScrollPane());
 
-        // create button, set text, set action
+        // create the node buttons, set text, set action
         cnode = new Button("Collection Node");
         cnode.setText("C");
         double r = 25;
@@ -72,7 +85,7 @@ public class Main extends Application {
         double width = 50;
         double height = 50;
         dnode.setShape(new Polygon( width / 2, 0, width, height, 0, height));
-        dnode.setText("cancel");
+        dnode.setText("D");
         dnode.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -82,28 +95,32 @@ public class Main extends Application {
             }
         });
 
-        // create labels
-        Label label1 = new Label(" Workspace ");
-        Label label2 = new Label(" Function 1");
-        Label label3 = new Label(" Function 2");
+//        // create labels
+//        Label label1 = new Label(" Workspace ");
+//        Label label2 = new Label(" Function 1");
+//        Label label3 = new Label(" Function 2");
+//        Label label4 = new Label(" Function 3");
+//
+//        // manually set buttons instead of using VBox
+//        cnode.setLayoutX(100);
+//        cnode.setLayoutY(10);
+//        mnode.setLayoutX(200);
+//        mnode.setLayoutY(10);
+//        dnode.setLayoutX(300);
+//        dnode.setLayoutY(10);
+//        label1.setLayoutX(700);
+//        label1.setLayoutY(40);
+//        label2.setLayoutX(200);
+//        label2.setLayoutY(40);
+//        label3.setLayoutX(200);
+//        label3.setLayoutY(30);
+//        label4.setLayoutX(200);
+//        label4.setLayoutY(20);
+//
+//        center.getChildren().addAll(label1);
+//        right.getChildren().addAll(label2, label3, label4);
 
-        // manually set buttons instead of using VBox
-        cnode.setLayoutX(100);
-        cnode.setLayoutY(10);
-        mnode.setLayoutX(200);
-        mnode.setLayoutY(10);
-        dnode.setLayoutX(300);
-        dnode.setLayoutY(10);
-        label1.setLayoutX(700);
-        label1.setLayoutY(40);
-        label2.setLayoutX(200);
-        label2.setLayoutY(40);
-        label3.setLayoutX(50);
-        label3.setLayoutY(700);
-
-        root.getChildren().addAll(label1, label2, label3);
-
-        // drag and drop items
+        // drag and drop functions
         final Text function1 = new Text(50, 100, "Function 1");
         function1.setScaleX(2.0);
         function1.setScaleY(2.0);
@@ -112,34 +129,45 @@ public class Main extends Application {
         function2.setScaleX(2.0);
         function2.setScaleY(2.0);
 
+        final Text function3 = new Text(50, 100, "Function 3");
+        function3.setScaleX(2.0);
+        function3.setScaleY(2.0);
+
         //change target to cnode, mnode, dnode
         final Text target = new Text(250, 100, " ADD");
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
-        // left VBox with nodes
-        root.getChildren().add(cnode);
-        root.getChildren().add(mnode);
+        // left VBox with nodes (Edward drag drop)
+        left.getChildren().addAll(cnode, mnode, dnode);
         cnode.setStyle("-fx-font-size: 1.5em; ");
         mnode.setStyle("-fx-font-size: 1.5em; ");
-        root.setStyle("-fx-border-color: black");
-        root.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
+        dnode.setStyle("-fx-font-size: 1.5em; ");
+        left.setStyle("-fx-border-color: black");
+        left.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
+        left.setAlignment(Pos.CENTER);
+        left.setSpacing(30);
 //            DoubleProperty fontSize= new SimpleDoubleProperty(5); // font size in pt
 //            root.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize));
 
-        // right VBox with drag and drop
-        root.getChildren().add(function1);
-        root.getChildren().add(function2);
-//            root.getChildren().add(target);
+        // right VBox with functions (Melinda drag drop)
+        right.getChildren().addAll(function1, function2, function3);
+        right.setStyle("-fx-border-color: black");
+        right.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
+        right.setAlignment(Pos.CENTER);
+        right.setSpacing(30);
 
         // mid VBox with labels
-//            root3.getChildren().add(label1);
-        root.getChildren().add(target);
+        center.getChildren().add(target);
+        center.setSpacing(30);
+        center.setStyle("-fx-border-color: black");
+        center.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.5));
 //            Line line1= new Line(600, 0, 600, 600);
-//            root3.getChildren().add(line1);
+//            center.getChildren().add(line1);
+        center.setAlignment(Pos.CENTER);
         // set font size for label in VBox
         DoubleProperty fontSize3= new SimpleDoubleProperty(18); // font size in pt
-        root.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize3));
+        center.styleProperty().bind(Bindings.format("-fx-font-size: %.2fpt;", fontSize3));
 
         // drag and drop functions
         function1.setOnDragDetected(new EventHandler<MouseEvent>() {
@@ -167,11 +195,29 @@ public class Main extends Application {
                 System.out.println("onDragDetected");
 
                 /* allow any transfer mode */
-                Dragboard db= function1.startDragAndDrop(TransferMode.ANY);
+                Dragboard db= function2.startDragAndDrop(TransferMode.ANY);
 
                 /* put a string on dragboard */
                 ClipboardContent content= new ClipboardContent();
                 content.putString(function2.getText());
+                db.setContent(content);
+
+                event.consume();
+            }
+        });
+
+        function3.setOnDragDetected(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                /* drag was detected, start drag-and-drop gesture*/
+                System.out.println("onDragDetected");
+
+                /* allow any transfer mode */
+                Dragboard db= function3.startDragAndDrop(TransferMode.ANY);
+
+                /* put a string on dragboard */
+                ClipboardContent content= new ClipboardContent();
+                content.putString(function3.getText());
                 db.setContent(content);
 
                 event.consume();
@@ -270,6 +316,18 @@ public class Main extends Application {
                 /* if the data was successfully moved, clear it */
                 if (event.getTransferMode() == TransferMode.MOVE) {
                     function2.setText("");
+                } event.consume();
+            }
+        });
+
+        function3.setOnDragDone(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                /* the drag-and-drop gesture ended */
+                System.out.println("onDragDone");
+                /* if the data was successfully moved, clear it */
+                if (event.getTransferMode() == TransferMode.MOVE) {
+                    function3.setText("");
                 } event.consume();
             }
         });
