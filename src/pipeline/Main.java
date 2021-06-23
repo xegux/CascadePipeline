@@ -1,11 +1,16 @@
 package pipeline;
 
+import com.fxgraph.graph.*;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -23,18 +28,14 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
-import com.fxgraph.graph.CellType;
-import com.fxgraph.graph.Graph;
-import com.fxgraph.graph.Model;
+import java.util.ArrayList;
 
 public class Main extends Application {
     Graph graph = new Graph();
-    Button cnode, mnode, dnode;
-    double sceneX, sceneY, layoutX, layoutY;
+    private Button cnode, mnode, dnode;
+    private double sceneX, sceneY, layoutX, layoutY;
 
     @Override
     public void start(Stage primaryStage) {
@@ -88,7 +89,7 @@ public class Main extends Application {
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
-        // left VBox with nodes
+        // left VBox with nodes and conditional connectors
         left.getChildren().addAll(cnode, mnode, dnode);
         cnode.setStyle("-fx-font-size: 1.5em; ");
         mnode.setStyle("-fx-font-size: 1.5em; ");
@@ -235,6 +236,32 @@ public class Main extends Application {
             }
         });
 
+        //update source_nodes array each time a node in the workspace is named
+        ArrayList<Label> source_nodes = new ArrayList<Label>();
+        ComboBox sources = new ComboBox(FXCollections.observableArrayList(source_nodes));
+        Label selected1 = new Label("default item selected");
+        EventHandler<ActionEvent> source_selection = new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                selected1.setText(sources.getValue() + " selected");
+            }
+        };
+        sources.setOnAction(source_selection);
+        TilePane source_pane = new TilePane(sources, selected1);
+        left.getChildren().add(source_pane);
+
+        //update target_nodes array each time a node in the workspace is named
+        ArrayList<Label> destination_nodes = new ArrayList<>();
+        ComboBox destinations = new ComboBox(FXCollections.observableArrayList(destination_nodes));
+        Label selected2 = new Label("default item selected");
+        EventHandler<ActionEvent> target_selection = new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                selected2.setText(destinations.getValue() + " selected");
+            }
+        };
+        destinations.setOnAction(target_selection);
+        TilePane target_pane = new TilePane(destinations, selected2);
+        left.getChildren().add(target_pane);
+
         center.setOnDragDropped(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
@@ -254,16 +281,15 @@ public class Main extends Application {
                     cnod.setShape(new Circle(r));
                     cnod.setMinSize(2 * r, 2 * r);
                     cnod.setMaxSize(2 * r, 2 * r);
-//                    Label clbl= new Label("Add to C");
-//                    center.getChildren().add(clbl);
+                    Label clbl= new Label("Add to C");
+                    center.getChildren().add(clbl);
 
                     cnod.setOnMousePressed(e -> {
                         sceneX= e.getSceneX();
                         sceneY= e.getSceneY();
                         layoutX= cnod.getLayoutX();
                         layoutY= cnod.getLayoutY();
-                        System.out
-                                .println(cnod.getText() + " Box onStart :: layoutX ::" + layoutX +
+                        System.out.println(cnod.getText() + " Box onStart :: layoutX ::" + layoutX +
                                         ", layoutY::" + layoutY);
                     });
                     // drag around
@@ -283,38 +309,40 @@ public class Main extends Application {
                         cnod.setTranslateY(0);
                     });
                     cnod.setOnAction(e -> {
-                        System.out
-                                .println("Button pressed " + ((Button) e.getSource()).getText());
+                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
                     });
-//                    clbl.setOnDragOver(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            /* data is dragged over the target */
-//                            System.out.println("onDragOver");
-//
-//                            /* accept it only if it is  not dragged from the same node
-//                             * and if it has a string data */
-//                            if (event.getGestureSource() != clbl &&
-//                                    event.getDragboard().hasString()) {
-//                                /* allow for both copying and moving, whatever user chooses */
-//                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-//                            }
-//                            event.consume();
-//                        }
-//                    });
-//                    clbl.setOnDragDropped(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            if (db.getString().equals("Function 1")) {
-//                                Label clbl= new Label("C: Function 1");
-//                                center.getChildren().add(clbl);
-//                            }
-//                            if (db.getString().equals("Function 2")) {
-//                                Label clbl= new Label("C: Function 2");
-//                                center.getChildren().add(clbl);
-//                            }
-//                        }
-//                    });
+                    clbl.setOnDragOver(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            /* data is dragged over the target */
+                            System.out.println("onDragOver");
+
+                            /* accept it only if it is  not dragged from the same node
+                             * and if it has a string data */
+                            if (event.getGestureSource() != clbl &&
+                                    event.getDragboard().hasString()) {
+                                /* allow for both copying and moving, whatever user chooses */
+                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                            }
+                            event.consume();
+                        }
+                    });
+                    clbl.setOnDragDropped(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            if (db.getString().equals("Function 1")) {
+                                Label clbl= new Label("C: Function 1");
+                                center.getChildren().add(clbl);
+                            }
+                            if (db.getString().equals("Function 2")) {
+                                Label clbl= new Label("C: Function 2");
+                                center.getChildren().add(clbl);
+                            }
+                        }
+                    });
+                    source_nodes.add(clbl);
+                    sources.setItems(source_nodes);
+                    destination_nodes.add(clbl);
                 }
 
                 if (db.getString().equals("M")) {
@@ -322,16 +350,15 @@ public class Main extends Application {
                     mnod.setText("M");
                     mnod.setShape(new Rectangle(100, 100));
                     center.getChildren().add(mnod);
-//                    Label mlbl= new Label("Add to M");
-//                    center.getChildren().add(mlbl);
+                    Label mlbl= new Label("Add to M");
+                    center.getChildren().add(mlbl);
 
                     mnod.setOnMousePressed(e -> {
                         sceneX= e.getSceneX();
                         sceneY= e.getSceneY();
                         layoutX= mnod.getLayoutX();
                         layoutY= mnod.getLayoutY();
-                        System.out
-                                .println(mnod.getText() + " Box onStart :: layoutX ::" + layoutX +
+                        System.out.println(mnod.getText() + " Box onStart :: layoutX ::" + layoutX +
                                         ", layoutY::" + layoutY);
                     });
                     mnod.setOnMouseDragged(e -> {
@@ -350,38 +377,37 @@ public class Main extends Application {
                         mnod.setTranslateY(0);
                     });
                     mnod.setOnAction(e -> {
-                        System.out
-                                .println("Button pressed " + ((Button) e.getSource()).getText());
+                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
                     });
-//                    mlbl.setOnDragOver(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            /* data is dragged over the target */
-//                            System.out.println("onDragOver");
-//
-//                            /* accept it only if it is  not dragged from the same node
-//                             * and if it has a string data */
-//                            if (event.getGestureSource() != mlbl &&
-//                                    event.getDragboard().hasString()) {
-//                                /* allow for both copying and moving, whatever user chooses */
-//                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-//                            }
-//                            event.consume();
-//                        }
-//                    });
-//                    mlbl.setOnDragDropped(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            if (db.getString().equals("Function 1")) {
-//                                Label mlbl= new Label("M: Function 1");
-//                                center.getChildren().add(mlbl);
-//                            }
-//                            if (db.getString().equals("Function 2")) {
-//                                Label mlbl= new Label("M: Function 2");
-//                                center.getChildren().add(mlbl);
-//                            }
-//                        }
-//                    });
+                    mlbl.setOnDragOver(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            /* data is dragged over the target */
+                            System.out.println("onDragOver");
+
+                            /* accept it only if it is  not dragged from the same node
+                             * and if it has a string data */
+                            if (event.getGestureSource() != mlbl &&
+                                    event.getDragboard().hasString()) {
+                                /* allow for both copying and moving, whatever user chooses */
+                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                            }
+                            event.consume();
+                        }
+                    });
+                    mlbl.setOnDragDropped(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            if (db.getString().equals("Function 1")) {
+                                Label mlbl= new Label("M: Function 1");
+                                center.getChildren().add(mlbl);
+                            }
+                            if (db.getString().equals("Function 2")) {
+                                Label mlbl= new Label("M: Function 2");
+                                center.getChildren().add(mlbl);
+                            }
+                        }
+                    });
                 }
 
                 if (db.getString().equals("D")) {
@@ -391,16 +417,15 @@ public class Main extends Application {
                     double height= 50;
                     dnod.setShape(new Polygon(width / 2, 0, width, height, 0, height));
                     center.getChildren().add(dnod);
-//                    Label dlbl= new Label("Add to D");
-//                    center.getChildren().add(dlbl);
+                    Label dlbl= new Label("Add to D");
+                    center.getChildren().add(dlbl);
 
                     dnod.setOnMousePressed(e -> {
                         sceneX= e.getSceneX();
                         sceneY= e.getSceneY();
                         layoutX= dnod.getLayoutX();
                         layoutY= dnod.getLayoutY();
-                        System.out
-                                .println(dnod.getText() + " Box onStart :: layoutX ::" + layoutX +
+                        System.out.println(dnod.getText() + " Box onStart :: layoutX ::" + layoutX +
                                         ", layoutY::" + layoutY);
                     });
                     dnod.setOnMouseDragged(e -> {
@@ -419,38 +444,37 @@ public class Main extends Application {
                         dnod.setTranslateY(0);
                     });
                     dnod.setOnAction(e -> {
-                        System.out
-                                .println("Button pressed " + ((Button) e.getSource()).getText());
+                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
                     });
-//                    dlbl.setOnDragOver(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            /* data is dragged over the target */
-//                            System.out.println("onDragOver");
-//
-//                            /* accept it only if it is  not dragged from the same node
-//                             * and if it has a string data */
-//                            if (event.getGestureSource() != dlbl &&
-//                                    event.getDragboard().hasString()) {
-//                                /* allow for both copying and moving, whatever user chooses */
-//                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-//                            }
-//                            event.consume();
-//                        }
-//                    });
-//                    dlbl.setOnDragDropped(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            if (db.getString().equals("Function 1")) {
-//                                Label dlbl= new Label("D: Function 1");
-//                                center.getChildren().add(dlbl);
-//                            }
-//                            if (db.getString().equals("Function 2")) {
-//                                Label dlbl= new Label("D: Function 2");
-//                                center.getChildren().add(dlbl);
-//                            }
-//                        }
-//                    });
+                    dlbl.setOnDragOver(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            /* data is dragged over the target */
+                            System.out.println("onDragOver");
+
+                            /* accept it only if it is  not dragged from the same node
+                             * and if it has a string data */
+                            if (event.getGestureSource() != dlbl &&
+                                    event.getDragboard().hasString()) {
+                                /* allow for both copying and moving, whatever user chooses */
+                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                            }
+                            event.consume();
+                        }
+                    });
+                    dlbl.setOnDragDropped(new EventHandler<DragEvent>() {
+                        @Override
+                        public void handle(DragEvent event) {
+                            if (db.getString().equals("Function 1")) {
+                                Label dlbl= new Label("D: Function 1");
+                                center.getChildren().add(dlbl);
+                            }
+                            if (db.getString().equals("Function 2")) {
+                                Label dlbl= new Label("D: Function 2");
+                                center.getChildren().add(dlbl);
+                            }
+                        }
+                    });
                 }
 //                    if (db.hasString()) {
 //                        target.setText(db.getString());
@@ -519,7 +543,6 @@ public class Main extends Application {
 
     private void addGraphComponents() {
         Model model = graph.getModel();
-
         graph.beginUpdate();
 
         model.addCell("Cell A", CellType.RECTANGLE);
