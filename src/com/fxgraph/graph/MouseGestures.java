@@ -1,5 +1,4 @@
 package com.fxgraph.graph;
-
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;

@@ -52,11 +52,10 @@ public class ZoomableScrollPane extends ScrollPane {
         }
         zoomTo(scaleValue);
     }
+
     /**
-     *
-     * @param minimizeOnly
-     *            If the content fits already into the viewport, then we don't
-     *            zoom if this parameter is true.
+     * @param minimizeOnly If the content fits already into the viewport, then we don't
+     *                     zoom if this parameter is true.
      */
     public void zoomToFit(boolean minimizeOnly) {
         double scaleX = getViewportBounds().getWidth() / getContent().getBoundsInLocal().getWidth();
