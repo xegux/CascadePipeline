@@ -29,8 +29,7 @@ public class Main extends Application {
     private Button cnode, mnode, dnode;
     private double sceneX, sceneY, layoutX, layoutY;
     private Graph graph = new Graph();
-    private Map<Label,Button> sourceNodMap;
-    private Map<Label,Button> destinationNodMap;
+    private Map<Label,Button> nodMap;
 //    private CellLayer cellLayer;
 //    private Group canvas;
 //    private ZoomableScrollPane scrollPane;
@@ -79,17 +78,21 @@ public class Main extends Application {
         double height = 50;
         dnode.setShape(new Polygon( width / 2, 0, width, height, 0, height));
 
-        // functions in right VBox
-        final Text function1 = new Text(50, 100, "Function 1");
+        final Text function1 = new Text(50, 100, "Function");
         function1.setScaleX(2.0);
         function1.setScaleY(2.0);
 
-        final Text target= new Text(250, 100, " Workspace");
+        ObservableList<Label> source_nodes = FXCollections.observableArrayList();
+        ComboBox sources_dropdown = new ComboBox(FXCollections.observableArrayList(source_nodes));
+        ObservableList<Label> destination_nodes = FXCollections.observableArrayList();
+        ComboBox destinations_dropdown = new ComboBox(FXCollections.observableArrayList(destination_nodes));
+
+        final Text target = new Text(250, 100, " Workspace");
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
         // left VBox with nodes, conditional connectors, and function
-        left.getChildren().addAll(function1, cnode, mnode, dnode);
+        left.getChildren().addAll(function1, cnode, mnode, dnode, sources_dropdown, destinations_dropdown);
         cnode.setStyle("-fx-font-size: 1.5em; ");
         mnode.setStyle("-fx-font-size: 1.5em; ");
         dnode.setStyle("-fx-font-size: 1.5em; ");
@@ -197,24 +200,10 @@ public class Main extends Application {
                     /* allow for both copying and moving, whatever user chooses */
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
-
                 event.consume();
             }
         });
 
-        //update both maps inside if statements
-        //after if statements but inside center event, have both the source and destination selection events
-        //call addarrow method with the labels as parameters
-        //the selections should be getting the label from the maps and getting labels in the addarrow method also from maps
-
-        ObservableList<Label> source_nodes = FXCollections.observableArrayList();
-        ComboBox sources_dropdown = new ComboBox(FXCollections.observableArrayList(source_nodes));
-        Label selected_source_label = new Label();
-
-        ObservableList<Label> destination_nodes = FXCollections.observableArrayList();
-        ComboBox destinations_dropdown = new ComboBox(FXCollections.observableArrayList(destination_nodes));
-        Label selected_destination_label = new Label();
-        
         AtomicInteger nodCount = new AtomicInteger();
 
         center.setOnDragDropped(new EventHandler<DragEvent>() {
@@ -278,7 +267,7 @@ public class Main extends Application {
                             // Resetting the translate positions
                             cnod.setTranslateX(0);
                             cnod.setTranslateY(0);
-                            
+
                             nodCount.getAndIncrement();
                         }
                         if (e.getButton() == MouseButton.SECONDARY) {
@@ -338,78 +327,13 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-//                    // set initial position of clbl according to cnod
-//                    layoutX= cnod.getLayoutX();
-//                    layoutY= cnod.getLayoutY();
-//                    clbl.setLayoutX(layoutX);
-//                    clbl.setLayoutY(layoutY + 50);
-//                    clbl.setOnMousePressed(e -> {
-//                        sceneX= e.getSceneX();
-//                        sceneY= e.getSceneY();
-//                        layoutX= clbl.getLayoutX();
-//                        layoutY= clbl.getLayoutY();
-//                        System.out
-//                                .println(clbl.getText() + " Box onStart :: layoutX ::" + layoutX +
-//                                        ", layoutY::" + layoutY);
-//                    });
-//                    // drag clbl around
-//                    clbl.setOnMouseDragged(e -> {
-//                        double offsetX= e.getSceneX() - sceneX;
-//                        double offsetY= e.getSceneY() - sceneY;
-//                        clbl.setTranslateX(offsetX);
-//                        clbl.setTranslateY(offsetY);
-//                    });
-//                    clbl.setOnMouseReleased(e -> {
-//                        // Updating the new layout positions
-//                        clbl.setLayoutX(layoutX + clbl.getTranslateX());
-//                        clbl.setLayoutY(layoutY + clbl.getTranslateY());
-//
-//                        // Resetting the translate positions
-//                        clbl.setTranslateX(0);
-//                        clbl.setTranslateY(0);
-//                    });
-//                    clbl.setOnDragOver(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            /* data is dragged over the target */
-//                            System.out.println("onDragOver");
-//
-//                            /* accept it only if it is  not dragged from the same node
-//                             * and if it has a string data */
-//                            if (event.getGestureSource() != clbl &&
-//                                    event.getDragboard().hasString()) {
-//                                /* allow for both copying and moving, whatever user chooses */
-//                                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-//                            }
-//                            event.consume();
-//                        }
-//                    });
-//                    clbl.setOnDragDropped(new EventHandler<DragEvent>() {
-//                        @Override
-//                        public void handle(DragEvent event) {
-//                            if (db.getString().equals("Function 1")) {
-//                                Label clbl= new Label("C: Function 1");
-//                                center.getChildren().add(clbl);
-//                            }
-//                            if (db.getString().equals("Function 2")) {
-//                                Label clbl= new Label("C: Function 2");
-//                                center.getChildren().add(clbl);
-//                            }
-//                        }
-//                    });
-
-                    sourceNodMap.put(clbl, cnod);
                     source_nodes.add(clbl);
                     sources_dropdown.setItems(source_nodes);
 
-                    destinationNodMap.put(clbl, cnod);
                     destination_nodes.add(clbl);
                     destinations_dropdown.setItems(destination_nodes);
 
-                    TilePane source_pane = new TilePane(sources_dropdown);
-                    left.getChildren().add(source_pane);
-                    TilePane destination_pane = new TilePane(destinations_dropdown);
-                    left.getChildren().add(destination_pane);
+                    nodMap.put(clbl, cnod);
                 }
 
                 if (db.getString().equals("M")) {
@@ -507,13 +431,13 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-                    sourceNodMap.put(mlbl, mnod);
                     source_nodes.add(mlbl);
                     sources_dropdown.setItems(source_nodes);
 
-                    destinationNodMap.put(mlbl, mnod);
                     destination_nodes.add(mlbl);
                     destinations_dropdown.setItems(destination_nodes);
+
+                    nodMap.put(mlbl, mnod);
                 }
 
                 if (db.getString().equals("D")) {
@@ -613,34 +537,39 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-                    sourceNodMap.put(dlbl, dnod);
                     source_nodes.add(dlbl);
                     sources_dropdown.setItems(source_nodes);
 
-                    destinationNodMap.put(dlbl, dnod);
                     destination_nodes.add(dlbl);
                     destinations_dropdown.setItems(destination_nodes);
+
+                    nodMap.put(dlbl, dnod);
                 }
 
-//                if (nodCount.get() >= 2) {
+                Label selected_source_label = new Label();
+                Label selected_destination_label = new Label();
+
+                if (nodCount.get() >= 2) {
                     EventHandler<ActionEvent> source_selection = new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
-                            selected_source_label.setText(e.getSource() + "");
-//                            selected_source_label.setText(sources_dropdown.getValue() + "");
+                            selected_source_label.setText(sources_dropdown.getValue() + "");
+                            source_nodes.remove(selected_source_label);
+                            sources_dropdown.setItems(source_nodes);
                         }
                     };
                     sources_dropdown.setOnAction(source_selection);
 
                     EventHandler<ActionEvent> destination_selection = new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
-                            selected_destination_label.setText(e.getSource() + "");
-//                            selected_destination_label.setText(destinations_dropdown.getValue() + "");
+                            selected_destination_label.setText(destinations_dropdown.getValue() + "");
+                            destination_nodes.remove(selected_destination_label);
+                            destinations_dropdown.setItems(destination_nodes);
                         }
                     };
                     destinations_dropdown.setOnAction(destination_selection);
 
                     center.getChildren().add(addArrow(selected_source_label, selected_destination_label));
-//                }
+                }
 
                 /* let the source know whether the string was successfully
                  * transferred and used */
@@ -701,10 +630,15 @@ public class Main extends Application {
     }
 
     public Arrow addArrow(Label sourceId, Label targetId) {
-        Button sourceCell = sourceNodMap.get(sourceId);
-        Button targetCell = destinationNodMap.get(targetId);
-        Arrow edge = new Arrow(sourceCell, targetCell);
-        return edge;
+        try {
+            Button sourceCell = nodMap.get(sourceId);
+            nodMap.remove(sourceId);
+            Button targetCell = nodMap.get(targetId);
+            Arrow edge = new Arrow(sourceCell, targetCell);
+            return edge;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void addGraphComponents() {
