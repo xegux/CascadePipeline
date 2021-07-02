@@ -4,11 +4,13 @@ import com.fxgraph.graph.*;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
@@ -22,7 +24,11 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.text.Text;
 
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends Application {
@@ -82,17 +88,17 @@ public class Main extends Application {
         function1.setScaleX(2.0);
         function1.setScaleY(2.0);
 
-        ObservableList<Label> source_nodes = FXCollections.observableArrayList();
-        ComboBox sources_dropdown = new ComboBox(FXCollections.observableArrayList(source_nodes));
-        ObservableList<Label> destination_nodes = FXCollections.observableArrayList();
-        ComboBox destinations_dropdown = new ComboBox(FXCollections.observableArrayList(destination_nodes));
+//        ObservableList<Label> source_nodes = FXCollections.observableArrayList();
+//        ComboBox sources_dropdown = new ComboBox(FXCollections.observableArrayList(source_nodes));
+//        ObservableList<Label> destination_nodes = FXCollections.observableArrayList();
+//        ComboBox destinations_dropdown = new ComboBox(FXCollections.observableArrayList(destination_nodes));
 
         final Text target = new Text(250, 100, " Workspace");
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
         // left VBox with nodes, conditional connectors, and function
-        left.getChildren().addAll(function1, cnode, mnode, dnode, sources_dropdown, destinations_dropdown);
+        left.getChildren().addAll(function1, cnode, mnode, dnode);
         cnode.setStyle("-fx-font-size: 1.5em; ");
         mnode.setStyle("-fx-font-size: 1.5em; ");
         dnode.setStyle("-fx-font-size: 1.5em; ");
@@ -327,11 +333,11 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-                    source_nodes.add(clbl);
-                    sources_dropdown.setItems(source_nodes);
-
-                    destination_nodes.add(clbl);
-                    destinations_dropdown.setItems(destination_nodes);
+//                    source_nodes.add(clbl);
+//                    sources_dropdown.setItems(source_nodes);
+//
+//                    destination_nodes.add(clbl);
+//                    destinations_dropdown.setItems(destination_nodes);
 
                     nodMap.put(clbl, cnod);
                 }
@@ -431,11 +437,11 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-                    source_nodes.add(mlbl);
-                    sources_dropdown.setItems(source_nodes);
-
-                    destination_nodes.add(mlbl);
-                    destinations_dropdown.setItems(destination_nodes);
+//                    source_nodes.add(mlbl);
+//                    sources_dropdown.setItems(source_nodes);
+//
+//                    destination_nodes.add(mlbl);
+//                    destinations_dropdown.setItems(destination_nodes);
 
                     nodMap.put(mlbl, mnod);
                 }
@@ -537,44 +543,88 @@ public class Main extends Application {
                         property.setSpacing(30);
                     });
 
-                    source_nodes.add(dlbl);
-                    sources_dropdown.setItems(source_nodes);
-
-                    destination_nodes.add(dlbl);
-                    destinations_dropdown.setItems(destination_nodes);
+//                    source_nodes.add(dlbl);
+//                    sources_dropdown.setItems(source_nodes);
+//
+//                    destination_nodes.add(dlbl);
+//                    destinations_dropdown.setItems(destination_nodes);
 
                     nodMap.put(dlbl, dnod);
                 }
 
-                Label selected_source_label = new Label();
-                Label selected_destination_label = new Label();
-
-                if (nodCount.get() >= 2) {
-                    EventHandler<ActionEvent> source_selection = new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent e) {
-                            selected_source_label.setText(sources_dropdown.getValue() + "");
-                            source_nodes.remove(selected_source_label);
-                            sources_dropdown.setItems(source_nodes);
-                        }
-                    };
-                    sources_dropdown.setOnAction(source_selection);
-
-                    EventHandler<ActionEvent> destination_selection = new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent e) {
-                            selected_destination_label.setText(destinations_dropdown.getValue() + "");
-                            destination_nodes.remove(selected_destination_label);
-                            destinations_dropdown.setItems(destination_nodes);
-                        }
-                    };
-                    destinations_dropdown.setOnAction(destination_selection);
-
-                    center.getChildren().add(addArrow(selected_source_label, selected_destination_label));
-                }
+//                Label selected_source_label = new Label();
+//                Label selected_destination_label = new Label();
+//
+//                if (nodCount.get() >= 2) {
+//                    EventHandler<ActionEvent> source_selection = new EventHandler<ActionEvent>() {
+//                        public void handle(ActionEvent e) {
+//                            selected_source_label.setText(sources_dropdown.getValue() + "");
+//                            source_nodes.remove(selected_source_label);
+//                            sources_dropdown.setItems(source_nodes);
+//                        }
+//                    };
+//                    sources_dropdown.setOnAction(source_selection);
+//
+//                    EventHandler<ActionEvent> destination_selection = new EventHandler<ActionEvent>() {
+//                        public void handle(ActionEvent e) {
+//                            selected_destination_label.setText(destinations_dropdown.getValue() + "");
+//                            destination_nodes.remove(selected_destination_label);
+//                            destinations_dropdown.setItems(destination_nodes);
+//                        }
+//                    };
+//                    destinations_dropdown.setOnAction(destination_selection);
+//
+//                    center.getChildren().add(addArrow(selected_source_label, selected_destination_label));
+//                }
 
                 /* let the source know whether the string was successfully
                  * transferred and used */
                 event.setDropCompleted(success);
                 event.consume();
+            }
+        });
+
+        // ArrayList of all nodes in workspace/nodMap
+        Set<Label> keySet = nodMap.keySet();
+        ArrayList<Label> listOfKeys = new ArrayList<Label>(keySet);
+        Collection<Button> values = nodMap.values();
+        ArrayList<Button> allNodes = new ArrayList<>(values);
+
+        // click on Edge Editing Mode button on left panel to create edges
+        Button arrowEditingMode = new Button();
+        arrowEditingMode.setText("Edge Editing Mode");
+        left.getChildren().add(arrowEditingMode);
+        arrowEditingMode.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("adding edges");
+                Line line;
+                int clicked = 0;
+
+                //in the center pane, click on source and destination node and arrow will be created
+                Button selectedSourceNode, selectedTargetNode;
+                EventHandler<MouseEvent> selection = new EventHandler<MouseEvent>() {
+                    public void handle(MouseEvent e) {
+                        clicked++;
+                        switch (clicked) {
+                            case 1:
+                                if (allNodes.contains(e.getSource())) {
+                                    selectedSourceNode = e.getSource();
+                                    allNodes.remove(e.getSource());
+                                }
+                                break;
+                            case 2:
+                                if (allNodes.contains(e.getSource())) {
+                                    selectedTargetNode = e.getSource();
+                                }
+                                break;
+                        }
+                    }
+                };
+                selectedSourceNode.addEventHandler(MouseEvent.MOUSE_CLICKED, selection);
+                selectedTargetNode.addEventHandler(MouseEvent.MOUSE_CLICKED, selection);
+
+                connect(selectedSourceNode, selectedTargetNode);
             }
         });
 
@@ -629,17 +679,42 @@ public class Main extends Application {
 //        addGraphComponents();
     }
 
-    public Arrow addArrow(Label sourceId, Label targetId) {
-        try {
-            Button sourceCell = nodMap.get(sourceId);
-            nodMap.remove(sourceId);
-            Button targetCell = nodMap.get(targetId);
-            Arrow edge = new Arrow(sourceCell, targetCell);
-            return edge;
-        } catch (Exception e) {
-            return null;
+    private void connect(Button n1, Button n2) {
+        if (n1.getParent() != n2.getParent()) {
+            throw new IllegalArgumentException("Nodes are in different containers");
         }
+        Pane parent = (Pane) n1.getParent();
+        Line line = new Line();
+        line.startXProperty().bind(Bindings.createDoubleBinding(() -> {
+            Bounds b = n1.getBoundsInParent();
+            return b.getMinX() + b.getWidth() / 2 ;
+        }, n1.boundsInParentProperty()));
+        line.startYProperty().bind(Bindings.createDoubleBinding(() -> {
+            Bounds b = n1.getBoundsInParent();
+            return b.getMinY() + b.getHeight() / 2 ;
+        }, n1.boundsInParentProperty()));
+        line.endXProperty().bind(Bindings.createDoubleBinding(() -> {
+            Bounds b = n2.getBoundsInParent();
+            return b.getMinX() + b.getWidth() / 2 ;
+        }, n2.boundsInParentProperty()));
+        line.endYProperty().bind(Bindings.createDoubleBinding(() -> {
+            Bounds b = n2.getBoundsInParent();
+            return b.getMinY() + b.getHeight() / 2 ;
+        }, n2.boundsInParentProperty()));
+        parent.getChildren().add(line);
     }
+
+//    private Arrow addArrow(Label sourceId, Label targetId) {
+//        try {
+//            Button sourceCell = nodMap.get(sourceId);
+//            nodMap.remove(sourceId);
+//            Button targetCell = nodMap.get(targetId);
+//            Arrow edge = new Arrow(sourceCell, targetCell);
+//            return edge;
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     private void addGraphComponents() {
         Model model = graph.getModel();
