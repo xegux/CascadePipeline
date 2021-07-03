@@ -1,53 +1,64 @@
 package pipeline;
 
-import com.fxgraph.graph.*;
-import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Bounds;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Pos;
-import javafx.scene.text.Text;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 public class Main extends Application {
     private Button cnode, mnode, dnode;
     private double sceneX, sceneY, layoutX, layoutY;
-    private Graph graph = new Graph();
-    private Map<Label,Button> nodMap;
+    private Map<Label, Button> nodMap= new HashMap();
+    private BooleanProperty addEdgeMode= new SimpleBooleanProperty(this, "addEdgeModeActive", false);
+    private Button selectedSourceNode, selectedTargetNode;
+    int countclick = 0;
 //    private CellLayer cellLayer;
 //    private Group canvas;
 //    private ZoomableScrollPane scrollPane;
 
     @Override
     public void start(Stage primaryStage) {
-        BorderPane root = new BorderPane();
-        HBox toolbar = new HBox();
-        VBox left = new VBox();
-        Pane center = new Pane();
-        VBox right = new VBox();
-        HBox bottom = new HBox();
+        BorderPane root= new BorderPane();
+        HBox toolbar= new HBox();
+        VBox left= new VBox();
+        Pane center= new Pane();
+        VBox right= new VBox();
+        HBox bottom= new HBox();
         root.setTop(toolbar);
         root.setLeft(left);
         root.setCenter(center);
@@ -64,36 +75,40 @@ public class Main extends Application {
 //        root.setCenter(graph.getScrollPane());
 
         // create the node buttons
-        cnode = new Button("Collection Node");
+        cnode= new Button("Collection Node");
         cnode.setText("C");
-        cnode.setTooltip(new Tooltip("Info tip for c node: Collect output of functions applied to Mode or Data I/O Nodes."));
-        double r = 25;
+        cnode.setTooltip(new Tooltip(
+                "Info tip for c node: Collect output of functions applied to Mode or Data I/O Nodes."));
+        double r= 25;
         cnode.setShape(new Circle(r));
-        cnode.setMinSize(2*r, 2*r);
-        cnode.setMaxSize(2*r, 2*r);
+        cnode.setMinSize(2 * r, 2 * r);
+        cnode.setMaxSize(2 * r, 2 * r);
 
-        mnode = new Button("Model Node");
+        mnode= new Button("Model Node");
         mnode.setText("M");
         mnode.setTooltip(new Tooltip("Info tip for m node: A saved model or code."));
-        mnode.setShape(new Rectangle(100,100));
+        mnode.setShape(new Rectangle(100, 100));
 
-        dnode = new Button("Data I/O Node");
+        dnode= new Button("Data I/O Node");
         dnode.setText("D");
-        dnode.setTooltip(new Tooltip("Info tip for d node: Takes in data from external sources (sensors)."));
-        double width = 50;
-        double height = 50;
-        dnode.setShape(new Polygon( width / 2, 0, width, height, 0, height));
+        dnode.setTooltip(
+                new Tooltip("Info tip for d node: Takes in data from external sources (sensors)."));
+        double width= 50;
+        double height= 50;
+        dnode.setShape(new Polygon(width / 2, 0, width, height, 0, height));
 
-        final Text function1 = new Text(50, 100, "Function");
+        final Text function1= new Text(50, 100, "Function");
         function1.setScaleX(2.0);
         function1.setScaleY(2.0);
 
+        // node counter
+        AtomicInteger nodCount = new AtomicInteger();
 //        ObservableList<Label> source_nodes = FXCollections.observableArrayList();
 //        ComboBox sources_dropdown = new ComboBox(FXCollections.observableArrayList(source_nodes));
 //        ObservableList<Label> destination_nodes = FXCollections.observableArrayList();
 //        ComboBox destinations_dropdown = new ComboBox(FXCollections.observableArrayList(destination_nodes));
 
-        final Text target = new Text(250, 100, " Workspace");
+        final Text target= new Text(250, 100, " Workspace");
         target.setScaleX(1.5);
         target.setScaleY(1.5);
 
@@ -210,8 +225,6 @@ public class Main extends Application {
             }
         });
 
-        AtomicInteger nodCount = new AtomicInteger();
-
         center.setOnDragDropped(new EventHandler<DragEvent>() {
             @Override
             public void handle(DragEvent event) {
@@ -225,17 +238,18 @@ public class Main extends Application {
 
                 if (db.getString().equals("C")) {
                     Button cnod= new Button("Collection Node");
-                    center.getChildren().add(cnod);
+
                     cnod.setText("C");
                     double r= 25;
                     cnod.setShape(new Circle(r));
                     cnod.setMinSize(2 * r, 2 * r);
                     cnod.setMaxSize(2 * r, 2 * r);
-                    //initial position for added node
-                    cnod.setLayoutX(150);
+                    // initial position for added node
+                    cnod.setLayoutX(100);
                     cnod.setLayoutY(150);
+                    center.getChildren().add(cnod);
 
-                    Label clbl = new Label("C Node Name");
+                    Label clbl= new Label("C Node Name");
 
                     cnod.setOnMousePressed(e -> {
                         if (e.getButton() == MouseButton.SECONDARY) {
@@ -276,6 +290,7 @@ public class Main extends Application {
 
                             nodCount.getAndIncrement();
                         }
+
                         if (e.getButton() == MouseButton.SECONDARY) {
                             // popup window
                             final Stage pop= new Stage();
@@ -314,23 +329,40 @@ public class Main extends Application {
                         }
                     });
                     cnod.setOnAction(e -> {
-                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
-                        // TODO: Showing the properties of the node on the right
-                        VBox property = new VBox();
-                        root.setRight(property);
-                        final Text property_title = new Text(50, 100, "Property for C node");
-                        property_title.setScaleX(2.0);
-                        property_title.setScaleY(2.0);
-                        final Text property1 = new Text(50, 100, "Name:");
-                        TextField name = new TextField();
-//                        cnod.setText(name.getText());
-                        final Text property2 = new Text(50, 100, "Path:");
-                        TextField path = new TextField();
-                        property.getChildren().addAll(property_title, property1, name, property2, path);
-                        property.setStyle("-fx-border-color: black");
-                        property.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
-                        property.setAlignment(Pos.CENTER);
-                        property.setSpacing(30);
+                        if (addEdgeMode.get()) {
+                            countclick++ ;
+                            switch (countclick) {
+                                case 1:
+                                    selectedSourceNode= (Button) e.getSource();
+                                    break;
+                                case 2:
+                                    selectedTargetNode= (Button) e.getSource();
+                                    connect(selectedSourceNode, selectedTargetNode);
+                                    countclick= 0;
+                                    break;
+                            }
+                        } else {
+                            System.out
+                                    .println("Button pressed " + ((Button) e.getSource()).getText());
+                            // TODO: Showing the properties of the node on the right
+                            VBox property= new VBox();
+                            root.setRight(property);
+                            final Text property_title= new Text(50, 100, "Property for C node");
+                            property_title.setScaleX(2.0);
+                            property_title.setScaleY(2.0);
+                            final Text property1= new Text(50, 100, "Name:");
+                            TextField name= new TextField();
+//                          cnod.setText(name.getText());
+                            final Text property2= new Text(50, 100, "Path:");
+                            TextField path= new TextField();
+                            property.getChildren().addAll(property_title, property1, name,
+                                    property2, path);
+                            property.setStyle("-fx-border-color: black");
+                            property.prefWidthProperty()
+                                    .bind(primaryStage.widthProperty().multiply(0.25));
+                            property.setAlignment(Pos.CENTER);
+                            property.setSpacing(30);
+                        }
                     });
 
 //                    source_nodes.add(clbl);
@@ -343,15 +375,15 @@ public class Main extends Application {
                 }
 
                 if (db.getString().equals("M")) {
-                    Button mnod = new Button("M");
+                    Button mnod= new Button("M");
                     mnod.setText("M");
                     mnod.setShape(new Rectangle(100, 100));
                     center.getChildren().add(mnod);
-                    //initial position for added node
-                    mnod.setLayoutX(150);
+                    // initial position for added node
+                    mnod.setLayoutX(200);
                     mnod.setLayoutY(150);
 
-                    Label mlbl = new Label("M Node Name");
+                    Label mlbl= new Label("M Node Name");
 
                     mnod.setOnMousePressed(e -> {
                         sceneX= e.getSceneX();
@@ -418,23 +450,40 @@ public class Main extends Application {
                         }
                     });
                     mnod.setOnAction(e -> {
-                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
-                        // TODO: Showing the properties of the node on the right
-                        VBox property = new VBox();
-                        root.setRight(property);
-                        final Text property_title = new Text(50, 100, "Property for M node");
-                        property_title.setScaleX(2.0);
-                        property_title.setScaleY(2.0);
-                        final Text property1 = new Text(50, 100, "Name:");
-                        TextField name = new TextField();
-//                        mnod.setText(name.getText());
-                        final Text property2 = new Text(50, 100, "Path:");
-                        TextField path = new TextField();
-                        property.getChildren().addAll(property_title, property1, name, property2, path);
-                        property.setStyle("-fx-border-color: black");
-                        property.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
-                        property.setAlignment(Pos.CENTER);
-                        property.setSpacing(30);
+                        if (addEdgeMode.get()) {
+                            countclick++ ;
+                            switch (countclick) {
+                                case 1:
+                                    selectedSourceNode= (Button) e.getSource();
+                                    break;
+                                case 2:
+                                    selectedTargetNode= (Button) e.getSource();
+                                    connect(selectedSourceNode, selectedTargetNode);
+                                    countclick= 0;
+                                    break;
+                            }
+                        } else {
+                            System.out
+                                    .println("Button pressed " + ((Button) e.getSource()).getText());
+                            // TODO: Showing the properties of the node on the right
+                            VBox property= new VBox();
+                            root.setRight(property);
+                            final Text property_title= new Text(50, 100, "Property for M node");
+                            property_title.setScaleX(2.0);
+                            property_title.setScaleY(2.0);
+                            final Text property1= new Text(50, 100, "Name:");
+                            TextField name= new TextField();
+//                          cnod.setText(name.getText());
+                            final Text property2= new Text(50, 100, "Path:");
+                            TextField path= new TextField();
+                            property.getChildren().addAll(property_title, property1, name,
+                                    property2, path);
+                            property.setStyle("-fx-border-color: black");
+                            property.prefWidthProperty()
+                                    .bind(primaryStage.widthProperty().multiply(0.25));
+                            property.setAlignment(Pos.CENTER);
+                            property.setSpacing(30);
+                        }
                     });
 
 //                    source_nodes.add(mlbl);
@@ -447,17 +496,17 @@ public class Main extends Application {
                 }
 
                 if (db.getString().equals("D")) {
-                    Button dnod = new Button("D");
+                    Button dnod= new Button("D");
                     dnod.setText("D");
                     double width= 50;
                     double height= 50;
                     dnod.setShape(new Polygon(width / 2, 0, width, height, 0, height));
                     center.getChildren().add(dnod);
-                    //initial position for added node
-                    dnod.setLayoutX(150);
+                    // initial position for added node
+                    dnod.setLayoutX(300);
                     dnod.setLayoutY(150);
 
-                    Label dlbl = new Label("D Node Name");
+                    Label dlbl= new Label("D Node Name");
 
                     dnod.setOnMousePressed(e -> {
                         sceneX= e.getSceneX();
@@ -524,23 +573,40 @@ public class Main extends Application {
                         }
                     });
                     dnod.setOnAction(e -> {
-                        System.out.println("Button pressed " + ((Button) e.getSource()).getText());
-                        // TODO: Showing the properties of the node on the right
-                        VBox property = new VBox();
-                        root.setRight(property);
-                        final Text property_title = new Text(50, 100, "Property for D node");
-                        property_title.setScaleX(2.0);
-                        property_title.setScaleY(2.0);
-                        final Text property1 = new Text(50, 100, "Name:");
-                        TextField name = new TextField();
-//                        dnod.setText(name.getText());
-                        final Text property2 = new Text(50, 100, "Path:");
-                        TextField path = new TextField();
-                        property.getChildren().addAll(property_title, property1, name, property2, path);
-                        property.setStyle("-fx-border-color: black");
-                        property.prefWidthProperty().bind(primaryStage.widthProperty().multiply(0.25));
-                        property.setAlignment(Pos.CENTER);
-                        property.setSpacing(30);
+                        if (addEdgeMode.get()) {
+                            countclick++ ;
+                            switch (countclick) {
+                                case 1:
+                                    selectedSourceNode= (Button) e.getSource();
+                                    break;
+                                case 2:
+                                    selectedTargetNode= (Button) e.getSource();
+                                    connect(selectedSourceNode, selectedTargetNode);
+                                    countclick= 0;
+                                    break;
+                            }
+                        } else {
+                            System.out
+                                    .println("Button pressed " + ((Button) e.getSource()).getText());
+                            // TODO: Showing the properties of the node on the right
+                            VBox property= new VBox();
+                            root.setRight(property);
+                            final Text property_title= new Text(50, 100, "Property for D node");
+                            property_title.setScaleX(2.0);
+                            property_title.setScaleY(2.0);
+                            final Text property1= new Text(50, 100, "Name:");
+                            TextField name= new TextField();
+//                          cnod.setText(name.getText());
+                            final Text property2= new Text(50, 100, "Path:");
+                            TextField path= new TextField();
+                            property.getChildren().addAll(property_title, property1, name,
+                                    property2, path);
+                            property.setStyle("-fx-border-color: black");
+                            property.prefWidthProperty()
+                                    .bind(primaryStage.widthProperty().multiply(0.25));
+                            property.setAlignment(Pos.CENTER);
+                            property.setSpacing(30);
+                        }
                     });
 
 //                    source_nodes.add(dlbl);
@@ -550,6 +616,7 @@ public class Main extends Application {
 //                    destinations_dropdown.setItems(destination_nodes);
 
                     nodMap.put(dlbl, dnod);
+
                 }
 
 //                Label selected_source_label = new Label();
@@ -581,50 +648,6 @@ public class Main extends Application {
                  * transferred and used */
                 event.setDropCompleted(success);
                 event.consume();
-            }
-        });
-
-        // ArrayList of all nodes in workspace/nodMap
-        Set<Label> keySet = nodMap.keySet();
-        ArrayList<Label> listOfKeys = new ArrayList<Label>(keySet);
-        Collection<Button> values = nodMap.values();
-        ArrayList<Button> allNodes = new ArrayList<>(values);
-
-        // click on Edge Editing Mode button on left panel to create edges
-        Button arrowEditingMode = new Button();
-        arrowEditingMode.setText("Edge Editing Mode");
-        left.getChildren().add(arrowEditingMode);
-        arrowEditingMode.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("adding edges");
-                Line line;
-                int clicked = 0;
-
-                //in the center pane, click on source and destination node and arrow will be created
-                Button selectedSourceNode, selectedTargetNode;
-                EventHandler<MouseEvent> selection = new EventHandler<MouseEvent>() {
-                    public void handle(MouseEvent e) {
-                        clicked++;
-                        switch (clicked) {
-                            case 1:
-                                if (allNodes.contains(e.getSource())) {
-                                    selectedSourceNode = e.getSource();
-                                    allNodes.remove(e.getSource());
-                                }
-                                break;
-                            case 2:
-                                if (allNodes.contains(e.getSource())) {
-                                    selectedTargetNode = e.getSource();
-                                }
-                                break;
-                        }
-                    }
-                };
-                selectedSourceNode.addEventHandler(MouseEvent.MOUSE_CLICKED, selection);
-                selectedTargetNode.addEventHandler(MouseEvent.MOUSE_CLICKED, selection);
-
-                connect(selectedSourceNode, selectedTargetNode);
             }
         });
 
@@ -667,75 +690,64 @@ public class Main extends Application {
             }
         });
 
-        HBox hbox = new HBox();
+        // ArrayList of all nodes in workspace/nodMap
+        Set<Label> keySet= nodMap.keySet();
+        ArrayList<Label> listOfKeys= new ArrayList<>(keySet);
+        Collection<Button> values= nodMap.values();
+        ArrayList<Button> allNodes= new ArrayList<>(values);
+        System.out.println(allNodes);
+
+        // click on Edge Editing Mode button on left panel to create edges
+        Button arrowEditingMode= new Button();
+        arrowEditingMode.setText("Edge Editing Mode");
+        arrowEditingMode.setStyle("-fx-background-color: Powderblue");
+        left.getChildren().add(arrowEditingMode);
+        arrowEditingMode.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (addEdgeMode.get()) {
+                    arrowEditingMode.setStyle("-fx-background-color: Powderblue");
+                } else arrowEditingMode.setStyle("-fx-background-color: Gold");
+                System.out.println("adding edges");
+                addEdgeMode.set(!addEdgeMode.get());
+                System.out.println(addEdgeMode.toString());
+                center.setOnMouseClicked(e -> System.out.println("Hi"));
+            }
+        });
+
+        HBox hbox= new HBox();
         hbox.getChildren().addAll(root);
 
-        Scene scene = new Scene(hbox, 900, 600);
+        Scene scene= new Scene(hbox, 900, 600);
         scene.getStylesheets().add(getClass().getResource("pipeline.css").toExternalForm());
 
         primaryStage.setScene(scene);
         primaryStage.show();
-
-//        addGraphComponents();
     }
 
     private void connect(Button n1, Button n2) {
         if (n1.getParent() != n2.getParent()) {
             throw new IllegalArgumentException("Nodes are in different containers");
         }
-        Pane parent = (Pane) n1.getParent();
-        Line line = new Line();
+        Pane parent= (Pane) n1.getParent();
+        Line line= new Line();
         line.startXProperty().bind(Bindings.createDoubleBinding(() -> {
-            Bounds b = n1.getBoundsInParent();
-            return b.getMinX() + b.getWidth() / 2 ;
+            Bounds b= n1.getBoundsInParent();
+            return b.getMinX() + b.getWidth() / 2;
         }, n1.boundsInParentProperty()));
         line.startYProperty().bind(Bindings.createDoubleBinding(() -> {
-            Bounds b = n1.getBoundsInParent();
-            return b.getMinY() + b.getHeight() / 2 ;
+            Bounds b= n1.getBoundsInParent();
+            return b.getMinY() + b.getHeight() / 2;
         }, n1.boundsInParentProperty()));
         line.endXProperty().bind(Bindings.createDoubleBinding(() -> {
-            Bounds b = n2.getBoundsInParent();
-            return b.getMinX() + b.getWidth() / 2 ;
+            Bounds b= n2.getBoundsInParent();
+            return b.getMinX() + b.getWidth() / 2;
         }, n2.boundsInParentProperty()));
         line.endYProperty().bind(Bindings.createDoubleBinding(() -> {
-            Bounds b = n2.getBoundsInParent();
-            return b.getMinY() + b.getHeight() / 2 ;
+            Bounds b= n2.getBoundsInParent();
+            return b.getMinY() + b.getHeight() / 2;
         }, n2.boundsInParentProperty()));
         parent.getChildren().add(line);
-    }
-
-//    private Arrow addArrow(Label sourceId, Label targetId) {
-//        try {
-//            Button sourceCell = nodMap.get(sourceId);
-//            nodMap.remove(sourceId);
-//            Button targetCell = nodMap.get(targetId);
-//            Arrow edge = new Arrow(sourceCell, targetCell);
-//            return edge;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
-
-    private void addGraphComponents() {
-        Model model = graph.getModel();
-        graph.beginUpdate();
-
-        model.addCell("Cell A", CellType.RECTANGLE);
-        model.addCell("Cell B", CellType.RECTANGLE);
-        model.addCell("Cell C", CellType.TRIANGLE);
-        model.addCell("Cell D", CellType.TRIANGLE);
-        model.addCell("Cell E", CellType.CIRCLE);
-        model.addCell("Cell F", CellType.CIRCLE);
-        model.addCell("Cell G", CellType.CIRCLE);
-
-        model.addEdge("Cell A", "Cell B");
-        model.addEdge("Cell B", "Cell C");
-        model.addEdge("Cell C", "Cell D");
-        model.addEdge("Cell D", "Cell E");
-        model.addEdge("Cell E", "Cell F");
-        model.addEdge("Cell F", "Cell G");
-
-        graph.endUpdate();
     }
 
     public static void main(String[] args) {
