@@ -1,4 +1,4 @@
-package com.fxgraph.graph;
+package pipeline;
 
 import javafx.event.EventHandler;
 import javafx.scene.Group;

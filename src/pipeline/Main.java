@@ -37,6 +37,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Scale;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -714,6 +715,25 @@ public class Main extends Application {
                 center.setOnMouseClicked(e -> System.out.println("Hi"));
             }
         });
+
+        // Zoomable Scroll Pane
+//        center.setOnScroll(event -> {
+//            double zoom_fac = 1.05;
+//
+//            if(delta_y < 0) {
+//                zoom_fac = 2.0 - zoom_fac;
+//            }
+//
+//            Scale newScale = new Scale();
+//            newScale.setPivotX(event.getX);
+//            newScale.setPivotY(event.getY);
+//            newScale.setX( content_group.getScaleX() * zoom_fac );
+//            newScale.setY( content_group.getScaleY() * zoom_fac );
+//
+//            content_group.getTransforms().add(newScale);
+//
+//            event.consume();
+//        });
 
         HBox hbox= new HBox();
         hbox.getChildren().addAll(root);
